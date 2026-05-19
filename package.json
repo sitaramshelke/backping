@@ -1,8 +1,8 @@
 {
   "name": "backping",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A local macOS menu-bar app that lets coding agents ask the user for input over chat.",
-  "homepage": "https://sitaramshelke.github.io/backping/",
+  "homepage": "https://sitaramshelke.me/backping/",
   "repository": {
     "type": "git",
     "url": "https://github.com/sitaramshelke/backping.git"

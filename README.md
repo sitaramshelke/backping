@@ -6,6 +6,14 @@ It exposes a localhost MCP server for tools like Codex. When an agent calls `ask
 
 BackPing does not execute commands, start agents, stream logs, or provide remote terminal access.
 
+## Download
+
+Download the latest unsigned macOS DMG from [GitHub Releases](https://github.com/sitaramshelke/backping/releases/latest).
+
+For version `1.0.0`, the direct Apple Silicon build is [BackPing-1.0.0-arm64.dmg](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-1.0.0-arm64.dmg).
+
+Because this build is not signed or notarized, macOS may warn on first launch. For a trusted local/internal build, use right-click, then Open.
+
 ## Status
 
 This is an early V1 for local and internal team testing.
