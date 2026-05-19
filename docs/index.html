@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BackPing</title>
+  <meta name="description" content="BackPing lets local coding agents ask for human input through Telegram or Slack without remote command execution." />
+  <link rel="icon" href="assets/app-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <nav class="nav" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="BackPing home">
+        <img src="assets/app-icon.png" alt="" />
+        <span>BackPing</span>
+      </a>
+      <div class="links">
+        <a href="#how">How It Works</a>
+        <a href="#security">Security</a>
+        <a href="https://github.com/sitaramshelke/backping">GitHub</a>
+      </div>
+    </nav>
+
+    <div id="top" class="hero-shell">
+      <div class="hero-content">
+        <p class="eyebrow">Local human input for AI agents</p>
+        <h1>BackPing</h1>
+        <p class="lede">
+          A macOS menu-bar app that lets Codex, Claude, and other MCP clients ask you questions through Telegram or Slack when they would otherwise get stuck.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="#setup">Set Up Locally</a>
+          <a class="button" href="#security">Security Model</a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <img src="assets/app-icon.png" alt="" />
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="how" class="band">
+      <div class="section-head">
+        <p class="eyebrow">Flow</p>
+        <h2>Agents ask. You answer. Work resumes.</h2>
+      </div>
+      <div class="steps">
+        <article>
+          <span>1</span>
+          <h3>Local MCP</h3>
+          <p>BackPing exposes a bearer-protected MCP server on <code>127.0.0.1</code>.</p>
+        </article>
+        <article>
+          <span>2</span>
+          <h3>Chat Relay</h3>
+          <p>Questions are sent to your configured Telegram chat or Slack DM thread.</p>
+        </article>
+        <article>
+          <span>3</span>
+          <h3>Typed Answer</h3>
+          <p>Your reply is routed back to the exact pending request, even when multiple agents ask at once.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="security" class="band contrast">
+      <div class="section-head">
+        <p class="eyebrow">Boundaries</p>
+        <h2>Narrow by design</h2>
+      </div>
+      <div class="grid">
+        <p>BackPing does not execute commands, start jobs, stream logs, or expose a terminal. It only asks the configured user for input and returns the answer to the local MCP caller.</p>
+        <ul>
+          <li>Localhost-only MCP server</li>
+          <li>Bearer-token MCP authentication</li>
+          <li>macOS Keychain for chat tokens</li>
+          <li>Telegram and Slack user allowlisting</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="setup" class="band">
+      <div class="section-head">
+        <p class="eyebrow">Install</p>
+        <h2>Run it as a local Mac app</h2>
+      </div>
+      <pre><code>npm install
+npm run dev
+npm run package:mac
+npm run dmg</code></pre>
+      <p class="note">Unsigned builds are intended for local and internal testing. macOS may require right-click, then Open, on first launch.</p>
+    </section>
+  </main>
+</body>
+</html>

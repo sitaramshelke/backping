@@ -1,0 +1,446 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BackPing Settings</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: Canvas;
+      color: CanvasText;
+      --accent: #0a84ff;
+      --accent-strong: #006edb;
+      --accent-soft: color-mix(in srgb, var(--accent) 16%, Canvas);
+      --success: #22863a;
+      --success-soft: color-mix(in srgb, var(--success) 18%, Canvas);
+      --warning: #c98200;
+      --warning-soft: color-mix(in srgb, var(--warning) 18%, Canvas);
+      --danger: #d1242f;
+      --danger-soft: color-mix(in srgb, var(--danger) 18%, Canvas);
+      --line: color-mix(in srgb, CanvasText 18%, transparent);
+      --surface: color-mix(in srgb, CanvasText 4%, Canvas);
+      --surface-strong: color-mix(in srgb, CanvasText 8%, Canvas);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --accent: #2f9bff;
+        --accent-strong: #147dde;
+        --success: #3ccf70;
+        --warning: #f2b844;
+        --danger: #ff6b6b;
+        --surface: color-mix(in srgb, white 6%, Canvas);
+        --surface-strong: color-mix(in srgb, white 10%, Canvas);
+      }
+    }
+    body {
+      margin: 0;
+      padding: 22px;
+    }
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0 0 6px;
+    }
+    h2 {
+      font-size: 15px;
+      margin: 0 0 12px;
+    }
+    h3 {
+      font-size: 14px;
+      margin: 0 0 8px;
+    }
+    p {
+      margin: 0;
+      color: color-mix(in srgb, CanvasText 72%, transparent);
+      line-height: 1.45;
+    }
+    section {
+      border-top: 1px solid color-mix(in srgb, CanvasText 16%, transparent);
+      padding-top: 18px;
+    }
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 12px 0;
+    }
+    input, select, textarea {
+      font: inherit;
+      padding: 9px 10px;
+      border-radius: 7px;
+      border: 1px solid color-mix(in srgb, CanvasText 26%, transparent);
+      background: var(--surface);
+      color: CanvasText;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
+      border-color: var(--accent);
+    }
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+    button {
+      font: inherit;
+      border: 1px solid color-mix(in srgb, CanvasText 24%, transparent);
+      border-radius: 7px;
+      padding: 8px 11px;
+      background: var(--surface-strong);
+      color: CanvasText;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
+    }
+    button.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      font-weight: 650;
+    }
+    button:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--accent) 55%, CanvasText);
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface-strong));
+    }
+    button.primary:hover:not(:disabled) {
+      background: var(--accent-strong);
+      border-color: var(--accent-strong);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: inset 0 0 0 999px color-mix(in srgb, black 8%, transparent);
+    }
+    button.flash-success {
+      border-color: var(--success);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 28%, transparent);
+    }
+    button.flash-action {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent);
+    }
+    button:disabled {
+      cursor: default;
+      opacity: 0.65;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+    .status {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      font-size: 13px;
+      background: var(--surface);
+    }
+    .pill.ok {
+      border-color: color-mix(in srgb, var(--success) 52%, var(--line));
+      background: var(--success-soft);
+    }
+    .pill.warn {
+      border-color: color-mix(in srgb, var(--warning) 52%, var(--line));
+      background: var(--warning-soft);
+    }
+    .pill.bad {
+      border-color: color-mix(in srgb, var(--danger) 46%, var(--line));
+      background: var(--danger-soft);
+    }
+    .pill.accent {
+      border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+      background: var(--accent-soft);
+    }
+    .provider-segment {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .provider-choice {
+      text-align: left;
+      background: var(--surface);
+      min-height: 74px;
+      position: relative;
+    }
+    .provider-choice strong,
+    .provider-choice span {
+      display: block;
+    }
+    .provider-choice span {
+      color: color-mix(in srgb, CanvasText 62%, transparent);
+      font-size: 12px;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+    .provider-choice[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+    .provider-choice[aria-pressed="true"]::after {
+      content: "Selected";
+      position: absolute;
+      top: 8px;
+      right: 9px;
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+      background: var(--accent);
+    }
+    .setup-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.1fr);
+      gap: 22px;
+      align-items: start;
+    }
+    .steps {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 8px;
+      color: color-mix(in srgb, CanvasText 72%, transparent);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .integration-panel[hidden] {
+      display: none;
+    }
+    .advanced {
+      display: grid;
+      gap: 12px;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px 14px;
+    }
+    .pending {
+      display: grid;
+      gap: 8px;
+    }
+    .request {
+      border: 1px solid color-mix(in srgb, CanvasText 16%, transparent);
+      border-radius: 7px;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+    .muted {
+      color: color-mix(in srgb, CanvasText 60%, transparent);
+      font-size: 12px;
+    }
+    .notice {
+      border-radius: 7px;
+      padding: 9px 10px;
+      font-size: 12px;
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      font-weight: 560;
+    }
+    .notice:empty {
+      display: none;
+    }
+    .notice.success {
+      border-color: color-mix(in srgb, var(--success) 58%, var(--line));
+      background: var(--success-soft);
+      color: CanvasText;
+    }
+    .notice.error {
+      border-color: color-mix(in srgb, var(--danger) 58%, var(--line));
+      background: var(--danger-soft);
+      color: CanvasText;
+    }
+    .notice.action {
+      border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+      background: var(--accent-soft);
+      color: CanvasText;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    @media (max-width: 720px) {
+      body {
+        padding: 16px;
+      }
+      .provider-segment,
+      .setup-grid {
+        grid-template-columns: 1fr;
+      }
+      .section-head {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>BackPing</h1>
+      <p>Local agents ask. You answer from chat. Nothing executes here.</p>
+      <p id="appNotice" class="notice"></p>
+    </header>
+
+    <section>
+      <h2>Status</h2>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>1. Choose Chat</h2>
+          <p>Only one integration is active at a time.</p>
+        </div>
+      </div>
+      <div class="provider-segment" role="group" aria-label="Messaging provider">
+        <button id="providerTelegram" class="provider-choice" data-provider-choice="telegram" aria-pressed="false">
+          <strong>Telegram</strong>
+          <span>Fast personal setup with BotFather. Best when Telegram Bot API is reachable.</span>
+        </button>
+        <button id="providerSlack" class="provider-choice" data-provider-choice="slack" aria-pressed="false">
+          <strong>Slack</strong>
+          <span>Work-friendly setup using Socket Mode. Answers stay inside message threads.</span>
+        </button>
+      </div>
+      <div class="row">
+        <button id="saveStatus" class="primary">Save Preferences</button>
+        <p id="providerHint" class="muted"></p>
+      </div>
+      <p id="preferenceStatus" class="notice"></p>
+    </section>
+
+    <section id="telegramPanel" class="integration-panel">
+      <div class="section-head">
+        <div>
+          <h2>2. Configure Telegram</h2>
+          <p>BackPing will accept replies only from the chat that completes setup.</p>
+        </div>
+        <p id="telegramInfo" class="muted"></p>
+      </div>
+      <div class="setup-grid">
+        <ol class="steps">
+          <li>Create a bot with BotFather.</li>
+          <li>Paste the bot token and save it.</li>
+          <li>Test the connection.</li>
+          <li>Open Telegram and send <code>/start</code> to the bot.</li>
+          <li>Copy the Codex config after the chat is connected.</li>
+        </ol>
+        <div>
+          <label>
+            Bot token
+            <input id="telegramToken" type="password" placeholder="Paste token, then save" />
+          </label>
+          <div class="row">
+            <button id="saveTelegram" class="primary">Save Token</button>
+            <button id="testTelegram">Test Connection</button>
+            <button id="clearTelegram">Clear</button>
+            <button id="openTelegram">Open BotFather</button>
+          </div>
+          <p id="telegramSaveStatus" class="notice"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="slackPanel" class="integration-panel">
+      <div class="section-head">
+        <div>
+          <h2>2. Configure Slack</h2>
+          <p>BackPing uses Socket Mode and routes answers through each question thread.</p>
+        </div>
+        <p id="slackInfo" class="muted"></p>
+      </div>
+      <div class="setup-grid">
+        <ol class="steps">
+          <li>Create a Slack app and enable Socket Mode.</li>
+          <li>Open <code>Settings > Basic Information</code>, scroll to <code>App-Level Tokens</code>, then generate an <code>xapp-</code> token with <code>connections:write</code>.</li>
+          <li>Add bot scopes: <code>chat:write</code>, <code>im:write</code>, <code>im:history</code>.</li>
+          <li>Subscribe to <code>message.im</code> and enable Interactivity.</li>
+          <li>Install the app, then paste the tokens and your Slack user ID.</li>
+          <li>Find your user ID from Slack: <code>Profile > More > Copy member ID</code>.</li>
+        </ol>
+        <div>
+          <div class="field-grid">
+            <label>
+              Bot token
+              <input id="slackBotToken" type="password" placeholder="xoxb-..." />
+            </label>
+            <label>
+              App-level token
+              <input id="slackAppToken" type="password" placeholder="xapp-..." />
+            </label>
+          </div>
+          <label>
+            Your Slack user ID
+            <input id="slackUserId" placeholder="U123ABCDEF" />
+          </label>
+          <div class="row">
+            <button id="saveSlack" class="primary">Save Slack</button>
+            <button id="testSlack">Test Connection</button>
+            <button id="clearSlack">Clear</button>
+            <button id="copySlackManifest">Copy Manifest</button>
+            <button id="openSlackApps">Open Slack Apps</button>
+          </div>
+          <p id="slackSaveStatus" class="notice"></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>3. Connect Agents</h2>
+          <p>Use user-level MCP config so BackPing is available across Codex and Claude sessions.</p>
+        </div>
+        <div class="row">
+          <button id="copyCodex" class="primary">Copy MCP Config</button>
+          <button id="copyInstructions">Copy Agent Memory Instruction</button>
+        </div>
+      </div>
+      <div class="advanced">
+        <label>
+          Local port
+          <input id="port" inputmode="numeric" />
+        </label>
+        <div class="row">
+          <button id="savePort">Save Port</button>
+          <button id="regenToken">Regenerate Auth Token</button>
+        </div>
+        <p id="mcpStatus" class="notice"></p>
+        <label>
+          MCP config for Codex CLI/Desktop
+          <textarea id="codexConfig" readonly></textarea>
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Pending Requests</h2>
+      <div id="pending" class="pending"></div>
+    </section>
+  </main>
+  <script src="./settings.js"></script>
+</body>
+</html>
