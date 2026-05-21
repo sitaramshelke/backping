@@ -15,7 +15,7 @@ describe("format helpers", () => {
 
   it("keeps agent instructions scoped to human input", () => {
     const snippet = agentInstructionSnippet();
-    expect(snippet).toContain("BackPing should be configured as a user/global MCP server");
+    expect(snippet).toContain("BackPing should be installed as a user/global MCP server");
     expect(snippet).toContain("mcp__backping__.ask_user");
     expect(snippet).toContain("wait then ask me");
     expect(snippet).toContain("Do not just sleep and post the question in chat");
@@ -25,7 +25,7 @@ describe("format helpers", () => {
     expect(snippet).toContain("If BackPing is unavailable, say so in chat");
     expect(snippet).toContain("ask there instead of using BackPing");
     expect(snippet).toContain("user/global MCP server");
-    expect(snippet).toContain("Codex CLI, Codex desktop, Claude Code, and Claude desktop");
-    expect(snippet).toContain("parallel agent sessions");
+    expect(snippet).toContain("whichever MCP client is being used");
+    expect(snippet).toContain("parallel sessions");
   });
 });

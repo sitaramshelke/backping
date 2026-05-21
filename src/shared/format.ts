@@ -114,7 +114,7 @@ export function agentInstructionSnippet(): string {
   return [
     "Remember this for future work:",
     "",
-    "BackPing should be configured as a user/global MCP server, not only in project-local or current-session config. It must be available across parallel agent sessions in Codex CLI, Codex desktop, Claude Code, and Claude desktop. For Codex, use BackPing's copied MCP config in `~/.codex/config.toml`; for Claude, add the equivalent user/global MCP server entry with the same local URL and Authorization bearer header.",
+    "BackPing should be installed as a user/global MCP server using BackPing's copied MCP config, not only in project-local or current-session config. Configure it at the user level for whichever MCP client is being used so it is available across parallel sessions and desktop/CLI variants.",
     "",
     "Behavior rule:",
     "Use BackPing (`mcp__backping__.ask_user` / `backping.ask_user`) whenever I am unavailable, away from keyboard, or explicitly ask you to wait and ask me later. Availability signals include lunch, dinner, AFK, away from keyboard, going out, commuting, in a meeting, stepping away, or \"wait then ask me\".",

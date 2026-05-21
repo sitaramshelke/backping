@@ -1,7 +1,7 @@
 {
   "name": "backping",
-  "version": "1.0.1",
-  "description": "A local macOS menu-bar app that lets coding agents ask the user for input over chat.",
+  "version": "1.0.2",
+  "description": "A local tray app that lets coding agents ask the user for input over chat.",
   "homepage": "https://sitaramshelke.me/backping/",
   "repository": {
     "type": "git",
@@ -14,12 +14,14 @@
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "npm run build && electron .",
-    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/build-icons.mjs",
     "package:mac": "npm run build && electron-builder --mac dir --publish never",
+    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never && node scripts/create-windows-alias.mjs",
     "dmg": "npm run package:mac && node scripts/create-dmg.mjs"
   },
   "keywords": [
@@ -71,6 +73,24 @@
         "dmg"
       ],
       "identity": null
+    },
+    "win": {
+      "icon": "assets/icon/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BackPing"
     },
     "dmg": {
       "title": "BackPing"

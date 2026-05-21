@@ -2,7 +2,7 @@ import { Bot, InlineKeyboard, type Context } from "grammy";
 import type { BackPingRequest, NotifierProvider, NotifyInput, ProviderSendResult } from "../../shared/types.js";
 import { formatNotificationMessage, formatRequestMessage } from "../../shared/format.js";
 import type { AppConfig } from "../config.js";
-import type { Keychain } from "../keychain.js";
+import type { SecretStore } from "../secret-store.js";
 import type { RequestManager } from "../request-manager.js";
 
 const TOKEN_ACCOUNT = "telegram-bot-token";
@@ -41,7 +41,7 @@ export class TelegramProvider implements NotifierProvider {
 
   constructor(
     private readonly config: AppConfig,
-    private readonly keychain: Keychain,
+    private readonly secretStore: SecretStore,
     private readonly requestManager: RequestManager,
     private readonly onStateChanged: () => void = () => {}
   ) {}
@@ -108,7 +108,7 @@ export class TelegramProvider implements NotifierProvider {
       throw new Error("Telegram bot token should look like 123456789:ABCDEF_from_BotFather.");
     }
 
-    await this.keychain.set(TOKEN_ACCOUNT, normalizedToken);
+    await this.secretStore.set(TOKEN_ACCOUNT, normalizedToken);
     this.botUsername = undefined;
     this.config.updateSettings({ telegramBotUsername: undefined, telegramLastError: undefined });
   }
@@ -140,13 +140,13 @@ export class TelegramProvider implements NotifierProvider {
   }
 
   async deleteToken(): Promise<void> {
-    await this.keychain.delete(TOKEN_ACCOUNT);
+    await this.secretStore.delete(TOKEN_ACCOUNT);
     this.config.updateSettings({ telegramLastError: undefined });
     await this.stop();
   }
 
   async getToken(): Promise<string | undefined> {
-    return this.keychain.get(TOKEN_ACCOUNT);
+    return this.secretStore.get(TOKEN_ACCOUNT);
   }
 
   async isConfigured(): Promise<boolean> {

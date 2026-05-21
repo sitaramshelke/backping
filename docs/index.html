@@ -28,10 +28,11 @@
         <p class="eyebrow">Local human input for AI agents</p>
         <h1>BackPing</h1>
         <p class="lede">
-          A macOS menu-bar app that lets Codex, Claude, and other MCP clients ask you questions through Telegram or Slack when they would otherwise get stuck.
+          A local tray app that lets Codex, Claude, and other MCP clients ask you questions through Telegram or Slack when they would otherwise get stuck.
         </p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-arm64.dmg">Download DMG</a>
+          <a class="button primary" href="https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-arm64.dmg">Download Mac DMG</a>
+          <a class="button" href="https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-windows-x64.exe">Download Windows EXE</a>
           <a class="button" href="#setup">Set Up Locally</a>
           <a class="button" href="#security">Security Model</a>
         </div>
@@ -78,7 +79,7 @@
         <ul>
           <li>Localhost-only MCP server</li>
           <li>Bearer-token MCP authentication</li>
-          <li>macOS Keychain for chat tokens</li>
+          <li>Encrypted local storage for chat tokens</li>
           <li>Telegram and Slack user allowlisting</li>
         </ul>
       </div>
@@ -87,13 +88,14 @@
     <section id="setup" class="band">
       <div class="section-head">
         <p class="eyebrow">Install</p>
-        <h2>Run it as a local Mac app</h2>
+        <h2>Run it as a local app</h2>
       </div>
       <pre><code>npm install
 npm run dev
 npm run package:mac
-npm run dmg</code></pre>
-      <p class="note">Download the latest unsigned DMG from <a href="https://github.com/sitaramshelke/backping/releases/latest">GitHub Releases</a>, or build it locally. Unsigned builds are intended for local testing and small-team sharing. macOS may require right-click, then Open, on first launch.</p>
+npm run dmg
+npm run package:win</code></pre>
+      <p class="note">Download the latest unsigned macOS DMG or Windows installer from <a href="https://github.com/sitaramshelke/backping/releases/latest">GitHub Releases</a>, or build locally. Unsigned builds are intended for local testing and small-team sharing. macOS may require right-click, then Open, and Windows may show SmartScreen warnings on first launch.</p>
     </section>
   </main>
 </body>

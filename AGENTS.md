@@ -2,7 +2,7 @@
 
 ## Project Goal
 
-BackPing is a local macOS menu-bar app that lets local coding agents ask the human for input through Telegram or Slack. It must stay a request/answer bridge only.
+BackPing is a local tray/menu-bar app that lets local coding agents ask the human for input through Telegram or Slack. It must stay a request/answer bridge only.
 
 Hard boundaries:
 
@@ -38,7 +38,7 @@ Test:
 npm test
 ```
 
-Convert the top-level PNG mockup crops into macOS app and menu-bar icon assets:
+Verify app, Windows, and tray icon assets. This helper currently requires macOS because it uses `sips`; keep generated icon assets committed:
 
 ```bash
 npm run icons
@@ -48,6 +48,12 @@ Package unsigned app:
 
 ```bash
 npm run package:mac
+```
+
+Package unsigned Windows installer:
+
+```bash
+npm run package:win
 ```
 
 Build unsigned DMG:
@@ -62,7 +68,7 @@ npm run dmg
 - Shared types and formatting helpers live under `src/shared`.
 - Keep core request lifecycle independent from Electron so it remains easy to test.
 - Store non-secret settings/history in local JSON through Electron Store.
-- Store Telegram and Slack tokens in macOS Keychain through the `security` CLI wrapper.
+- Store Telegram and Slack tokens through the cross-platform `SecretStore`, which uses Electron `safeStorage` for new saves and only reads legacy macOS Keychain entries for migration.
 - MCP must bind only to `127.0.0.1` and require bearer auth.
 - Telegram must support multiple simultaneous pending requests.
 - Slack must support multiple simultaneous pending requests by requiring answers in the relevant question thread or through Block Kit buttons.
@@ -76,7 +82,7 @@ When developing or testing this repo with Codex, use this behavior:
 ```md
 Remember this for future work:
 
-BackPing should be configured as a user/global MCP server, not only in project-local or current-session config. It must be available across parallel agent sessions in Codex CLI, Codex desktop, Claude Code, and Claude desktop. For Codex, use BackPing's copied MCP config in `~/.codex/config.toml`; for Claude, add the equivalent user/global MCP server entry with the same local URL and Authorization bearer header.
+BackPing should be installed as a user/global MCP server using BackPing's copied MCP config, not only in project-local or current-session config. Configure it at the user level for whichever MCP client is being used so it is available across parallel sessions and desktop/CLI variants.
 
 Behavior rule:
 Use BackPing (`mcp__backping__.ask_user` / `backping.ask_user`) whenever I am unavailable, away from keyboard, or explicitly ask you to wait and ask me later. Availability signals include lunch, dinner, AFK, away from keyboard, going out, commuting, in a meeting, stepping away, or "wait then ask me".

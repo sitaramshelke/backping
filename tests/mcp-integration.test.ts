@@ -78,7 +78,7 @@ describe("MCP HTTP integration", () => {
     server = new McpHttpServer(config, manager);
     await server.start();
 
-    client = new Client({ name: "backping-test", version: "1.0.1" });
+    client = new Client({ name: "backping-test", version: "1.0.2" });
     const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`), {
       requestInit: {
         headers: {

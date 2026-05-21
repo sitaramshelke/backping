@@ -4,7 +4,7 @@ import { WebClient } from "@slack/web-api";
 import type { BackPingRequest, NotifierProvider, NotifyInput, ProviderSendResult } from "../../shared/types.js";
 import { formatNotificationMessage, formatRequestMessage, shortenCwd } from "../../shared/format.js";
 import type { AppConfig } from "../config.js";
-import type { Keychain } from "../keychain.js";
+import type { SecretStore } from "../secret-store.js";
 import type { RequestManager } from "../request-manager.js";
 
 const BOT_TOKEN_ACCOUNT = "slack-bot-token";
@@ -185,7 +185,7 @@ export class SlackProvider implements NotifierProvider {
 
   constructor(
     private readonly config: AppConfig,
-    private readonly keychain: Keychain,
+    private readonly secretStore: SecretStore,
     private readonly requestManager: RequestManager,
     private readonly onStateChanged: () => void = () => {}
   ) {}
@@ -272,7 +272,7 @@ export class SlackProvider implements NotifierProvider {
       if (!isSlackBotTokenLike(botToken)) {
         throw new Error("Slack bot token should start with xoxb-.");
       }
-      await this.keychain.set(BOT_TOKEN_ACCOUNT, botToken);
+      await this.secretStore.set(BOT_TOKEN_ACCOUNT, botToken);
     }
 
     if (input.appToken !== undefined && input.appToken.trim()) {
@@ -280,7 +280,7 @@ export class SlackProvider implements NotifierProvider {
       if (!isSlackAppTokenLike(appToken)) {
         throw new Error("Slack app-level token should start with xapp-.");
       }
-      await this.keychain.set(APP_TOKEN_ACCOUNT, appToken);
+      await this.secretStore.set(APP_TOKEN_ACCOUNT, appToken);
     }
 
     if (input.userId !== undefined) {
@@ -325,8 +325,8 @@ export class SlackProvider implements NotifierProvider {
 
   async deleteConfig(): Promise<void> {
     await Promise.all([
-      this.keychain.delete(BOT_TOKEN_ACCOUNT),
-      this.keychain.delete(APP_TOKEN_ACCOUNT)
+      this.secretStore.delete(BOT_TOKEN_ACCOUNT),
+      this.secretStore.delete(APP_TOKEN_ACCOUNT)
     ]);
     this.config.updateSettings({
       slackUserId: undefined,
@@ -381,11 +381,11 @@ export class SlackProvider implements NotifierProvider {
   }
 
   async hasBotToken(): Promise<boolean> {
-    return Boolean(await this.keychain.get(BOT_TOKEN_ACCOUNT));
+    return Boolean(await this.secretStore.get(BOT_TOKEN_ACCOUNT));
   }
 
   async hasAppToken(): Promise<boolean> {
-    return Boolean(await this.keychain.get(APP_TOKEN_ACCOUNT));
+    return Boolean(await this.secretStore.get(APP_TOKEN_ACCOUNT));
   }
 
   private registerHandlers(socket: SocketModeClient): void {
@@ -528,8 +528,8 @@ export class SlackProvider implements NotifierProvider {
 
   private async getCredentials(): Promise<{ botToken?: string; appToken?: string }> {
     const [botToken, appToken] = await Promise.all([
-      this.keychain.get(BOT_TOKEN_ACCOUNT),
-      this.keychain.get(APP_TOKEN_ACCOUNT)
+      this.secretStore.get(BOT_TOKEN_ACCOUNT),
+      this.secretStore.get(APP_TOKEN_ACCOUNT)
     ]);
     return { botToken, appToken };
   }

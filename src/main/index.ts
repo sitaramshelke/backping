@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AppConfig } from "./config.js";
 import { HistoryStore } from "./history-store.js";
-import { Keychain } from "./keychain.js";
+import { SecretStore } from "./secret-store.js";
 import { McpHttpServer } from "./mcp-server.js";
 import { TelegramProvider } from "./providers/telegram.js";
 import { SlackProvider } from "./providers/slack.js";
@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 let tray: Tray | undefined;
 let settingsWindow: BrowserWindow | undefined;
 let appConfig: AppConfig;
-let keychain: Keychain;
+let secretStore: SecretStore;
 let historyStore: HistoryStore;
 let requestManager: RequestManager;
 let telegramProvider: TelegramProvider;
@@ -60,18 +60,18 @@ function trayIcon() {
 
 function bootstrap(): void {
   appConfig = new AppConfig();
-  keychain = new Keychain();
+  secretStore = new SecretStore();
   historyStore = new HistoryStore();
   requestManager = new RequestManager(
     historyStore,
     () => getCurrentProvider(),
     () => appConfig.getSettings().historyLimit
   );
-  telegramProvider = new TelegramProvider(appConfig, keychain, requestManager, () => {
+  telegramProvider = new TelegramProvider(appConfig, secretStore, requestManager, () => {
     updateTray();
     sendStateChanged();
   });
-  slackProvider = new SlackProvider(appConfig, keychain, requestManager, () => {
+  slackProvider = new SlackProvider(appConfig, secretStore, requestManager, () => {
     updateTray();
     sendStateChanged();
   });
@@ -106,15 +106,21 @@ function startProviderInBackground(): void {
 }
 
 function setLaunchAtLogin(enabled: boolean, throwOnError = false): void {
-  if (process.platform !== "darwin") {
+  if (process.platform !== "darwin" && process.platform !== "win32") {
     return;
   }
 
   try {
-    app.setLoginItemSettings({
-      openAtLogin: enabled,
-      openAsHidden: true
-    });
+    if (process.platform === "darwin") {
+      app.setLoginItemSettings({
+        openAtLogin: enabled,
+        openAsHidden: true
+      });
+    } else {
+      app.setLoginItemSettings({
+        openAtLogin: enabled
+      });
+    }
   } catch (error) {
     console.error("BackPing launch-at-login setting failed:", error);
     if (throwOnError) {
@@ -124,7 +130,7 @@ function setLaunchAtLogin(enabled: boolean, throwOnError = false): void {
 }
 
 function shouldShowSettingsOnLaunch(): boolean {
-  if (process.platform !== "darwin") {
+  if (process.platform !== "darwin" && process.platform !== "win32") {
     return true;
   }
 
@@ -195,7 +201,7 @@ function showSettingsWindow(): void {
       preload: path.join(app.getAppPath(), "src", "main", "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false
+      sandbox: true
     }
   });
 
@@ -393,7 +399,7 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  // Keep the menu-bar app alive when the settings window is closed.
+  // Keep the tray app alive when the settings window is closed.
 });
 
 app.on("before-quit", async () => {

@@ -116,7 +116,11 @@ async function refresh(options = {}) {
   ].forEach(([label, value]) => {
     const el = document.createElement("div");
     el.className = ["pill", statusTone(label, value, state)].filter(Boolean).join(" ");
-    el.innerHTML = "<strong>" + label + "</strong><br>" + value;
+    const title = document.createElement("strong");
+    title.textContent = label;
+    el.appendChild(title);
+    el.appendChild(document.createElement("br"));
+    el.appendChild(document.createTextNode(value));
     status.appendChild(el);
   });
 
@@ -129,7 +133,20 @@ async function refresh(options = {}) {
     requests.forEach((request) => {
       const el = document.createElement("div");
       el.className = "request";
-      el.innerHTML = '<strong>' + request.agent + '</strong><span class="muted">' + (request.displayCwd || "") + '</span><div>' + request.question + '</div>';
+
+      const agent = document.createElement("strong");
+      agent.textContent = request.agent || "Agent";
+      el.appendChild(agent);
+
+      const cwd = document.createElement("span");
+      cwd.className = "muted";
+      cwd.textContent = request.displayCwd || "";
+      el.appendChild(cwd);
+
+      const question = document.createElement("div");
+      question.textContent = request.question || "";
+      el.appendChild(question);
+
       const button = document.createElement("button");
       button.textContent = "Cancel";
       button.addEventListener("click", async (event) => {
@@ -177,13 +194,13 @@ document.getElementById("copyMcp").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await api.copyMcpConfig();
   confirmButton(button, "Copied");
-  setNotice(mcpStatus, "success", "MCP config copied. Paste it into your user-level MCP config. Codex uses ~/.codex/config.toml; other clients can use the same URL and Authorization header.");
+  setNotice(mcpStatus, "success", "MCP config copied. Paste it into the user-level MCP config for your agent client.");
 });
 document.getElementById("copyInstructions").addEventListener("click", async (event) => {
   const button = event.currentTarget;
   await api.copyAgentInstructions();
   confirmButton(button, "Copied");
-  setNotice(mcpStatus, "success", "Agent memory instruction copied. Paste it into Codex/Claude memory or user-level agent instructions.");
+  setNotice(mcpStatus, "success", "Agent memory instruction copied. Paste it into your agent memory or user-level agent instructions.");
 });
 
 document.getElementById("regenToken").addEventListener("click", async (event) => {

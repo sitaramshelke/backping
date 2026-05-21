@@ -1,4 +1,5 @@
-import { access, mkdir } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFile } from "node:child_process";
@@ -9,8 +10,13 @@ const execFileAsync = promisify(execFile);
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const iconDir = path.join(root, "assets", "icon");
 const icns = path.join(iconDir, "icon.icns");
+const ico = path.join(iconDir, "icon.ico");
 const trayPng = path.join(iconDir, "tray-template.png");
 const appPng = path.join(iconDir, "app-icon.png");
+
+if (process.platform !== "darwin") {
+  throw new Error("npm run icons currently requires macOS because it uses sips to derive committed icon assets.");
+}
 
 async function assertReadable(file, label) {
   try {
@@ -38,4 +44,31 @@ if (tray.width !== 22 || tray.height !== 22) {
 
 await execFileAsync("sips", ["-s", "format", "png", icns, "--out", appPng]);
 
-console.log("Verified macOS icon assets and refreshed assets/icon/app-icon.png.");
+const tempDir = await mkdtemp(path.join(tmpdir(), "backping-icons-"));
+try {
+  const winPng = path.join(tempDir, "icon-256.png");
+  await execFileAsync("sips", ["-z", "256", "256", appPng, "--out", winPng]);
+  const png = await readFile(winPng);
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+
+  const directory = Buffer.alloc(16);
+  directory[0] = 0;
+  directory[1] = 0;
+  directory[2] = 0;
+  directory[3] = 0;
+  directory.writeUInt16LE(1, 4);
+  directory.writeUInt16LE(32, 6);
+  directory.writeUInt32LE(png.length, 8);
+  directory.writeUInt32LE(header.length + directory.length, 12);
+
+  await writeFile(ico, Buffer.concat([header, directory, png]));
+} finally {
+  await rm(tempDir, { recursive: true, force: true });
+}
+
+await assertReadable(ico, "Windows app icon");
+
+console.log("Verified app icon assets and refreshed assets/icon/app-icon.png and assets/icon/icon.ico.");

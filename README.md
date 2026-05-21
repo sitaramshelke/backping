@@ -1,6 +1,6 @@
 # BackPing
 
-BackPing is a local macOS menu-bar app for one narrow job: helping local coding agents avoid getting stuck when they need human input.
+BackPing is a local tray app for one narrow job: helping local coding agents avoid getting stuck when they need human input.
 
 It exposes a localhost MCP server for MCP-capable agents such as Codex CLI, Codex desktop, Claude Code, Claude desktop, and other clients that can use Streamable HTTP MCP. When an agent calls `ask_user`, BackPing sends the question to Telegram or Slack, waits for your answer, and returns that answer to the agent.
 
@@ -8,11 +8,12 @@ BackPing does not execute commands, start agents, stream logs, or provide remote
 
 ## Download
 
-Download the latest unsigned macOS DMG from [GitHub Releases](https://github.com/sitaramshelke/backping/releases/latest).
+Download the latest unsigned build for your OS from [GitHub Releases](https://github.com/sitaramshelke/backping/releases/latest).
 
-The direct Apple Silicon build is [BackPing-latest-arm64.dmg](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-arm64.dmg).
+- macOS Apple Silicon: [BackPing-latest-arm64.dmg](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-arm64.dmg)
+- Windows x64: [BackPing-latest-windows-x64.exe](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-windows-x64.exe)
 
-Because this build is not signed or notarized, macOS may warn on first launch. For a trusted local build, use right-click, then Open.
+These builds are unsigned. macOS may warn on first launch; for a trusted local build, use right-click, then Open. Windows may show SmartScreen warnings; use these Windows builds for testing until they have more real-machine coverage.
 
 ## Status
 
@@ -20,7 +21,7 @@ This is an early V1 for local testing and small-team sharing.
 
 Implemented:
 
-- Electron menu-bar app.
+- Electron tray/menu-bar app.
 - Local Streamable HTTP MCP endpoint on `127.0.0.1`.
 - Bearer-token auth for MCP.
 - Telegram provider using long polling.
@@ -32,10 +33,11 @@ Implemented:
 - Slack Block Kit buttons for choices.
 - Reply-to-message answer routing.
 - Local JSON request history.
-- macOS Keychain storage for Telegram and Slack tokens.
+- Electron `safeStorage`-backed local secret storage for Telegram and Slack tokens, with legacy macOS Keychain migration.
 - Copyable MCP config and agent instruction snippets.
 - Optional launch-at-login startup.
 - Unsigned macOS app/DMG packaging.
+- Unsigned Windows installer packaging.
 
 Deferred:
 
@@ -51,7 +53,7 @@ BackPing uses an Agent Plane mark: an AI agent inside a message bubble sending a
 
 ## Requirements
 
-- macOS.
+- macOS or Windows.
 - Node.js and npm.
 - A Telegram account or Slack workspace access.
 - An MCP client that supports Streamable HTTP, such as Codex CLI, Codex desktop, Claude Code, Claude desktop, or another compatible agent client.
@@ -82,7 +84,7 @@ Run tests:
 npm test
 ```
 
-Verify icon assets and refresh the README/GitHub Pages PNG derived from the macOS app icon:
+Verify icon assets and refresh the README/GitHub Pages PNG plus Windows ICO derived from the app icon. This helper currently requires macOS because it uses `sips`; the generated assets are committed for Windows builds:
 
 ```bash
 npm run icons
@@ -98,6 +100,12 @@ Build an unsigned DMG:
 
 ```bash
 npm run dmg
+```
+
+Build an unsigned Windows installer:
+
+```bash
+npm run package:win
 ```
 
 The packaged output is written under `release/`.
@@ -142,9 +150,9 @@ For Slack, each agent question is a parent DM message. Answer by replying in tha
 
 In BackPing settings, use the two buttons in `Connect Agents`:
 
-- `Copy MCP Config`: paste this into your user-level MCP config. For Codex, use `~/.codex/config.toml`; that user-level file is shared by Codex CLI and Codex desktop. Other MCP clients should use the same local URL and Authorization bearer header in their own user/global MCP config.
+- `Copy MCP Config`: paste this into the user-level MCP config for your agent client. Use user-level config so the same BackPing server is available across parallel sessions and desktop/CLI variants.
 - `Copy Agent Memory Instruction`: paste this into Codex memory, Claude memory, personal instructions, or a user-level agent instruction file so agents remember to install BackPing in the user-level MCP config and use it only when you are unavailable and a decision would otherwise block progress.
-- `Launch at login`: enable this if you want BackPing to start automatically after a Mac restart or sign-in. It starts quietly in the menu bar without opening settings.
+- `Launch at login`: enable this if you want BackPing to start automatically after a computer restart or sign-in. It starts quietly in the tray/menu bar without opening settings.
 
 Example:
 
@@ -163,7 +171,7 @@ Agent memory instruction:
 ```md
 Remember this for future work:
 
-BackPing should be configured as a user/global MCP server, not only in project-local or current-session config. It must be available across parallel agent sessions in Codex CLI, Codex desktop, Claude Code, and Claude desktop. For Codex, use BackPing's copied MCP config in `~/.codex/config.toml`; for Claude, add the equivalent user/global MCP server entry with the same local URL and Authorization bearer header.
+BackPing should be installed as a user/global MCP server using BackPing's copied MCP config, not only in project-local or current-session config. Configure it at the user level for whichever MCP client is being used so it is available across parallel sessions and desktop/CLI variants.
 
 Behavior rule:
 Use BackPing (`mcp__backping__.ask_user` / `backping.ask_user`) whenever I am unavailable, away from keyboard, or explicitly ask you to wait and ask me later. Availability signals include lunch, dinner, AFK, away from keyboard, going out, commuting, in a meeting, stepping away, or "wait then ask me".
@@ -221,6 +229,8 @@ To test concurrent requests, start two MCP calls before answering either one. In
 
 `npm run dmg` creates an unsigned DMG. This is fine for local testing and small-team sharing, but macOS may show a Gatekeeper warning on first launch, especially on another Mac. Use right-click, then Open, for trusted builds.
 
+`npm run package:win` creates an unsigned Windows installer from macOS via electron-builder, plus `BackPing-latest-windows-x64.exe` for stable release downloads. Windows may show SmartScreen warnings for unsigned builds, and each Windows build should be tested on a real Windows machine or VM before sharing widely.
+
 A smoother external install would require Developer ID signing and notarization, but that is intentionally outside V1.
 
 ## GitHub Pages
@@ -233,7 +243,7 @@ BackPing is intentionally narrow:
 
 - It binds MCP only to `127.0.0.1`.
 - It requires a local bearer token for MCP calls.
-- It stores Telegram and Slack tokens in macOS Keychain.
+- It stores Telegram and Slack tokens in Electron `safeStorage`-backed local secret storage.
 - It only accepts Telegram messages from the chat that completed `/start`.
 - It only accepts Slack messages and interactions from the configured Slack user ID.
 - It never opens a shell, PTY, or job runner.
