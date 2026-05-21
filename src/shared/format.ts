@@ -97,7 +97,7 @@ export function formatNotificationMessage(input: {
   return lines.join("\n");
 }
 
-export function codexConfigSnippet(port: number, authToken: string): string {
+export function mcpConfigSnippet(port: number, authToken: string): string {
   return [
     "[mcp_servers.backping]",
     `url = "http://127.0.0.1:${port}/mcp"`,

@@ -8,6 +8,7 @@ export interface BackPingSettings {
   provider: RelayProviderName;
   port: number;
   authToken: string;
+  launchAtLogin: boolean;
   telegramChatId?: string;
   telegramUsername?: string;
   telegramBotUsername?: string;
@@ -71,6 +72,7 @@ export interface RelayStatus {
   provider: RelayProviderName;
   telegramConnected: boolean;
   slackConnected: boolean;
+  launchAtLogin: boolean;
   pendingCount: number;
   port: number;
   hasTelegramToken: boolean;

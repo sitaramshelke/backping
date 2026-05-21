@@ -49,6 +49,9 @@ function statusTone(label, value, state) {
   if (label === "Pending") {
     return Number(value) > 0 ? "warn" : "ok";
   }
+  if (label === "Launch") {
+    return value === "At login" ? "accent" : "";
+  }
   return "";
 }
 
@@ -82,7 +85,8 @@ async function refresh(options = {}) {
   setNotice(appNotice, "", "");
   chooseProvider(options.preserveProvider ? selectedProvider : state.provider || "telegram");
   document.getElementById("port").value = state.port;
-  document.getElementById("codexConfig").value = state.codexConfig;
+  document.getElementById("launchAtLogin").checked = Boolean(state.launchAtLogin);
+  document.getElementById("mcpConfig").value = state.mcpConfig;
   document.getElementById("telegramInfo").textContent = [
     state.hasTelegramToken ? "Token saved." : "No token saved.",
     state.telegramChatId ? "Chat connected: " + state.telegramChatId : "No chat connected yet.",
@@ -107,7 +111,8 @@ async function refresh(options = {}) {
     ["MCP", state.mcpRunning ? "Running" : "Stopped"],
     ["Active Chat", activeProvider],
     ["Chat Status", activeConnected ? "Connected" : "Not connected"],
-    ["Pending", String(state.pendingCount)]
+    ["Pending", String(state.pendingCount)],
+    ["Launch", state.launchAtLogin ? "At login" : "Manual"]
   ].forEach(([label, value]) => {
     const el = document.createElement("div");
     el.className = ["pill", statusTone(label, value, state)].filter(Boolean).join(" ");
@@ -152,17 +157,27 @@ document.getElementById("saveStatus").addEventListener("click", async (event) =>
 
 document.getElementById("savePort").addEventListener("click", async (event) => {
   const button = event.currentTarget;
-  await api.saveSettings({ port: Number(document.getElementById("port").value) });
-  await refresh({ preserveProvider: true });
-  confirmButton(button, "Saved");
-  setNotice(mcpStatus, "success", "Local MCP port saved.");
+  button.disabled = true;
+  try {
+    await api.saveSettings({
+      port: Number(document.getElementById("port").value),
+      launchAtLogin: document.getElementById("launchAtLogin").checked
+    });
+    await refresh({ preserveProvider: true });
+    confirmButton(button, "Saved");
+    setNotice(mcpStatus, "success", "Local MCP settings saved.");
+  } catch (error) {
+    setNotice(mcpStatus, "error", "Could not save local settings: " + messageFromError(error));
+  } finally {
+    button.disabled = false;
+  }
 });
 
-document.getElementById("copyCodex").addEventListener("click", async (event) => {
+document.getElementById("copyMcp").addEventListener("click", async (event) => {
   const button = event.currentTarget;
-  await api.copyCodexConfig();
+  await api.copyMcpConfig();
   confirmButton(button, "Copied");
-  setNotice(mcpStatus, "success", "MCP config copied. Paste it into ~/.codex/config.toml for Codex CLI and Codex desktop.");
+  setNotice(mcpStatus, "success", "MCP config copied. Paste it into your user-level MCP config. Codex uses ~/.codex/config.toml; other clients can use the same URL and Authorization header.");
 });
 document.getElementById("copyInstructions").addEventListener("click", async (event) => {
   const button = event.currentTarget;

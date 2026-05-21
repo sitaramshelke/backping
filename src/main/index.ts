@@ -9,7 +9,7 @@ import { McpHttpServer } from "./mcp-server.js";
 import { TelegramProvider } from "./providers/telegram.js";
 import { SlackProvider } from "./providers/slack.js";
 import { RequestManager } from "./request-manager.js";
-import { agentInstructionSnippet, codexConfigSnippet } from "../shared/format.js";
+import { agentInstructionSnippet, mcpConfigSnippet } from "../shared/format.js";
 import type { NotifierProvider, RelayProviderName, RelayStatus } from "../shared/types.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -105,6 +105,33 @@ function startProviderInBackground(): void {
     });
 }
 
+function setLaunchAtLogin(enabled: boolean, throwOnError = false): void {
+  if (process.platform !== "darwin") {
+    return;
+  }
+
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+      openAsHidden: true
+    });
+  } catch (error) {
+    console.error("BackPing launch-at-login setting failed:", error);
+    if (throwOnError) {
+      throw new Error("Could not update launch-at-login setting.");
+    }
+  }
+}
+
+function shouldShowSettingsOnLaunch(): boolean {
+  if (process.platform !== "darwin") {
+    return true;
+  }
+
+  const loginSettings = app.getLoginItemSettings();
+  return !loginSettings.wasOpenedAtLogin && !loginSettings.wasOpenedAsHidden;
+}
+
 function getProviderName(): RelayProviderName {
   return appConfig.getSettings().provider ?? "telegram";
 }
@@ -144,7 +171,7 @@ function updateTray(): void {
     { label: `Pending: ${state.pendingCount}`, enabled: false },
     { type: "separator" },
     { label: "Settings", click: () => showSettingsWindow() },
-    { label: "Copy MCP Config", click: () => copyCodexConfig() },
+    { label: "Copy MCP Config", click: () => copyMcpConfig() },
     { type: "separator" },
     { label: "Quit", click: () => app.quit() }
   ]);
@@ -187,7 +214,7 @@ function sendStateChanged(): void {
   settingsWindow?.webContents.send("backping:state-changed");
 }
 
-async function getState(): Promise<RelayStatus & { requests: unknown[]; codexConfig: string; agentInstructions: string }> {
+async function getState(): Promise<RelayStatus & { requests: unknown[]; mcpConfig: string; agentInstructions: string }> {
   const settings = appConfig.getSettings();
   const status = getRelayStatusSync();
   return {
@@ -196,7 +223,7 @@ async function getState(): Promise<RelayStatus & { requests: unknown[]; codexCon
     hasSlackBotToken: await slackProvider.hasBotToken(),
     hasSlackAppToken: await slackProvider.hasAppToken(),
     requests: requestManager.list(),
-    codexConfig: codexConfigSnippet(settings.port, settings.authToken),
+    mcpConfig: mcpConfigSnippet(settings.port, settings.authToken),
     agentInstructions: agentInstructionSnippet()
   };
 }
@@ -208,6 +235,7 @@ function getRelayStatusSync(): RelayStatus {
     provider: settings.provider,
     telegramConnected: telegramProvider?.isConnected() ?? false,
     slackConnected: slackProvider?.isConnected() ?? false,
+    launchAtLogin: settings.launchAtLogin,
     pendingCount: requestManager?.listPending().length ?? 0,
     port: settings.port,
     hasTelegramToken: false,
@@ -225,9 +253,9 @@ function getRelayStatusSync(): RelayStatus {
   };
 }
 
-function copyCodexConfig(): void {
+function copyMcpConfig(): void {
   const settings = appConfig.getSettings();
-  clipboard.writeText(codexConfigSnippet(settings.port, settings.authToken));
+  clipboard.writeText(mcpConfigSnippet(settings.port, settings.authToken));
 }
 
 function copySlackManifest(): void {
@@ -237,15 +265,21 @@ function copySlackManifest(): void {
 
 function registerIpc(): void {
   ipcMain.handle("backping:get-state", async () => getState());
-  ipcMain.handle("backping:save-settings", async (_event, input: { port?: number; provider?: RelayProviderName }) => {
+  ipcMain.handle("backping:save-settings", async (_event, input: { port?: number; provider?: RelayProviderName; launchAtLogin?: boolean }) => {
     const current = appConfig.getSettings();
     const nextPort = input.port ? Math.max(1024, Math.min(65535, Number(input.port))) : current.port;
     const shouldRestart = nextPort !== current.port;
     const nextProvider = input.provider === "slack" || input.provider === "telegram" ? input.provider : current.provider;
     const shouldSwitchProvider = nextProvider !== current.provider;
+    const nextLaunchAtLogin = input.launchAtLogin ?? current.launchAtLogin;
+    const shouldUpdateLaunchAtLogin = nextLaunchAtLogin !== current.launchAtLogin;
+    if (shouldUpdateLaunchAtLogin) {
+      setLaunchAtLogin(nextLaunchAtLogin, true);
+    }
     appConfig.updateSettings({
       port: nextPort,
-      provider: nextProvider
+      provider: nextProvider,
+      launchAtLogin: nextLaunchAtLogin
     });
     if (shouldRestart) {
       await mcpServer.restart();
@@ -305,8 +339,8 @@ function registerIpc(): void {
     sendStateChanged();
     return getState();
   });
-  ipcMain.handle("backping:copy-codex-config", async () => {
-    copyCodexConfig();
+  ipcMain.handle("backping:copy-mcp-config", async () => {
+    copyMcpConfig();
     return true;
   });
   ipcMain.handle("backping:copy-agent-instructions", async () => {
@@ -328,7 +362,7 @@ function registerIpc(): void {
   ipcMain.handle("backping:regenerate-auth-token", async () => {
     appConfig.regenerateAuthToken();
     await mcpServer.restart();
-    copyCodexConfig();
+    copyMcpConfig();
     updateTray();
     sendStateChanged();
     return getState();
@@ -348,8 +382,11 @@ app.whenReady().then(() => {
   }
   registerIpc();
   bootstrap();
+  setLaunchAtLogin(appConfig.getSettings().launchAtLogin);
   createTray();
-  showSettingsWindow();
+  if (shouldShowSettingsOnLaunch()) {
+    showSettingsWindow();
+  }
   startMcpServerInBackground();
   startProviderInBackground();
   app.focus({ steal: true });

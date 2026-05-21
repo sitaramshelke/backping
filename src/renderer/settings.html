@@ -237,6 +237,27 @@
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 10px 14px;
     }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 4px 0;
+      font-weight: 500;
+    }
+    .check-row input {
+      margin-top: 3px;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+    }
+    .check-row strong,
+    .check-row span {
+      display: block;
+    }
+    .check-row .muted {
+      margin-top: 2px;
+      line-height: 1.35;
+    }
     .pending {
       display: grid;
       gap: 8px;
@@ -346,7 +367,7 @@
           <li>Paste the bot token and save it.</li>
           <li>Test the connection.</li>
           <li>Open Telegram and send <code>/start</code> to the bot.</li>
-          <li>Copy the Codex config after the chat is connected.</li>
+          <li>Copy the MCP config after the chat is connected.</li>
         </ol>
         <div>
           <label>
@@ -412,10 +433,10 @@
       <div class="section-head">
         <div>
           <h2>3. Connect Agents</h2>
-          <p>Use user-level MCP config so BackPing is available across Codex and Claude sessions.</p>
+          <p>Use user-level MCP config so BackPing is available across MCP-capable agents.</p>
         </div>
         <div class="row">
-          <button id="copyCodex" class="primary">Copy MCP Config</button>
+          <button id="copyMcp" class="primary">Copy MCP Config</button>
           <button id="copyInstructions">Copy Agent Memory Instruction</button>
         </div>
       </div>
@@ -424,14 +445,21 @@
           Local port
           <input id="port" inputmode="numeric" />
         </label>
+        <label class="check-row">
+          <input id="launchAtLogin" type="checkbox" />
+          <span>
+            <strong>Launch at login</strong>
+            <span class="muted">Start BackPing automatically after you sign in, without opening settings.</span>
+          </span>
+        </label>
         <div class="row">
-          <button id="savePort">Save Port</button>
+          <button id="savePort">Save Local Settings</button>
           <button id="regenToken">Regenerate Auth Token</button>
         </div>
         <p id="mcpStatus" class="notice"></p>
         <label>
-          MCP config for Codex CLI/Desktop
-          <textarea id="codexConfig" readonly></textarea>
+          MCP config
+          <textarea id="mcpConfig" readonly></textarea>
         </label>
       </div>
     </section>

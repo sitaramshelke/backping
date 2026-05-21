@@ -2,7 +2,7 @@
 
 BackPing is a local macOS menu-bar app for one narrow job: helping local coding agents avoid getting stuck when they need human input.
 
-It exposes a localhost MCP server for tools like Codex. When an agent calls `ask_user`, BackPing sends the question to Telegram or Slack, waits for your answer, and returns that answer to the agent.
+It exposes a localhost MCP server for MCP-capable agents such as Codex CLI, Codex desktop, Claude Code, Claude desktop, and other clients that can use Streamable HTTP MCP. When an agent calls `ask_user`, BackPing sends the question to Telegram or Slack, waits for your answer, and returns that answer to the agent.
 
 BackPing does not execute commands, start agents, stream logs, or provide remote terminal access.
 
@@ -10,13 +10,13 @@ BackPing does not execute commands, start agents, stream logs, or provide remote
 
 Download the latest unsigned macOS DMG from [GitHub Releases](https://github.com/sitaramshelke/backping/releases/latest).
 
-For version `1.0.0`, the direct Apple Silicon build is [BackPing-1.0.0-arm64.dmg](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-1.0.0-arm64.dmg).
+The direct Apple Silicon build is [BackPing-latest-arm64.dmg](https://github.com/sitaramshelke/backping/releases/latest/download/BackPing-latest-arm64.dmg).
 
-Because this build is not signed or notarized, macOS may warn on first launch. For a trusted local/internal build, use right-click, then Open.
+Because this build is not signed or notarized, macOS may warn on first launch. For a trusted local build, use right-click, then Open.
 
 ## Status
 
-This is an early V1 for local and internal team testing.
+This is an early V1 for local testing and small-team sharing.
 
 Implemented:
 
@@ -33,14 +33,15 @@ Implemented:
 - Reply-to-message answer routing.
 - Local JSON request history.
 - macOS Keychain storage for Telegram and Slack tokens.
-- Copyable Codex config and agent instruction snippets.
+- Copyable MCP config and agent instruction snippets.
+- Optional launch-at-login startup.
 - Unsigned macOS app/DMG packaging.
 
 Deferred:
 
 - Stdio MCP wrapper.
 - Signed/notarized releases.
-- Automatic Codex config editing.
+- Automatic MCP config editing.
 
 ## Logo
 
@@ -53,7 +54,7 @@ BackPing uses an Agent Plane mark: an AI agent inside a message bubble sending a
 - macOS.
 - Node.js and npm.
 - A Telegram account or Slack workspace access.
-- Codex CLI or another MCP client that supports Streamable HTTP.
+- An MCP client that supports Streamable HTTP, such as Codex CLI, Codex desktop, Claude Code, Claude desktop, or another compatible agent client.
 
 ## Development
 
@@ -137,12 +138,13 @@ BackPing opens a DM with your user and only accepts messages or button clicks fr
 
 For Slack, each agent question is a parent DM message. Answer by replying in that message thread, or use the choice buttons. Top-level DM replies are not used to answer questions, which keeps concurrent requests easier to follow.
 
-## Codex Setup
+## Agent MCP Setup
 
 In BackPing settings, use the two buttons in `Connect Agents`:
 
-- `Copy MCP Config`: paste this into `~/.codex/config.toml`. That user-level file is shared by Codex CLI and Codex desktop.
+- `Copy MCP Config`: paste this into your user-level MCP config. For Codex, use `~/.codex/config.toml`; that user-level file is shared by Codex CLI and Codex desktop. Other MCP clients should use the same local URL and Authorization bearer header in their own user/global MCP config.
 - `Copy Agent Memory Instruction`: paste this into Codex memory, Claude memory, personal instructions, or a user-level agent instruction file so agents remember to install BackPing in the user-level MCP config and use it only when you are unavailable and a decision would otherwise block progress.
+- `Launch at login`: enable this if you want BackPing to start automatically after a Mac restart or sign-in. It starts quietly in the menu bar without opening settings.
 
 Example:
 
@@ -195,7 +197,7 @@ BackPing exposes these tools:
 {
   "question": "Should I update the migration or adjust the fixture?",
   "cwd": "/Users/you/Workspace/example",
-  "agent": "Codex",
+  "agent": "Agent",
   "context": "The current test failure can be fixed in either place.",
   "choices": ["Update migration", "Adjust fixture", "Stop and wait"],
   "timeout_seconds": 1800,
@@ -208,16 +210,16 @@ BackPing exposes these tools:
 1. Run `npm run dev`.
 2. Configure Telegram or Slack in settings.
 3. Set the active provider and save.
-4. Copy Codex config from settings into Codex.
-5. Ask Codex to call `backping.ask_user` with the current `cwd`.
+4. Copy the MCP config from settings into your user-level agent/MCP client config.
+5. Ask an MCP-capable agent to call `backping.ask_user` with the current `cwd`.
 6. Answer in Telegram, or answer in the Slack question thread.
-7. Confirm the MCP call returns and Codex continues.
+7. Confirm the MCP call returns and the agent continues.
 
 To test concurrent requests, start two MCP calls before answering either one. In Telegram, reply to each question message or use the inline buttons. In Slack, answer in each question thread or use the buttons.
 
 ## Packaging Notes
 
-`npm run dmg` creates an unsigned DMG. This is fine for local/internal testing, but macOS may show a Gatekeeper warning on first launch, especially on another Mac. Use right-click, then Open, for trusted internal builds.
+`npm run dmg` creates an unsigned DMG. This is fine for local testing and small-team sharing, but macOS may show a Gatekeeper warning on first launch, especially on another Mac. Use right-click, then Open, for trusted builds.
 
 A smoother external install would require Developer ID signing and notarization, but that is intentionally outside V1.
 

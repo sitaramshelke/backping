@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, rm, cp, symlink } from "node:fs/promises";
+import { mkdir, rm, cp, copyFile, symlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -16,6 +16,7 @@ const stagingDir = path.join(releaseDir, "dmg-staging");
 const stagedApp = path.join(stagingDir, "BackPing.app");
 const applicationsLink = path.join(stagingDir, "Applications");
 const dmgPath = path.join(releaseDir, `BackPing-${pkg.version}-arm64.dmg`);
+const latestDmgPath = path.join(releaseDir, "BackPing-latest-arm64.dmg");
 
 if (!existsSync(appPath)) {
   throw new Error(`Missing packaged app: ${appPath}`);
@@ -40,4 +41,6 @@ await execFileAsync("hdiutil", [
 ]);
 
 await rm(stagingDir, { recursive: true, force: true });
+await copyFile(dmgPath, latestDmgPath);
 console.log(`Created ${dmgPath}`);
+console.log(`Created ${latestDmgPath}`);

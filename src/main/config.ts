@@ -25,6 +25,7 @@ export class AppConfig {
           provider: "telegram",
           port: randomPort(),
           authToken: randomToken(),
+          launchAtLogin: false,
           historyLimit: 100
         }
       }
@@ -38,6 +39,7 @@ export class AppConfig {
     return {
       ...cleanSettings,
       provider: cleanSettings.provider ?? "telegram",
+      launchAtLogin: cleanSettings.launchAtLogin ?? false,
       historyLimit: cleanSettings.historyLimit ?? 100
     };
   }

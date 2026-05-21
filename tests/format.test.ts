@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { homedir } from "node:os";
-import { agentInstructionSnippet, codexConfigSnippet, shortenCwd } from "../src/shared/format.js";
+import { agentInstructionSnippet, mcpConfigSnippet, shortenCwd } from "../src/shared/format.js";
 
 describe("format helpers", () => {
   it("shortens home-relative directories", () => {
     expect(shortenCwd(`${homedir()}/Workspace/backping`)).toBe("~/Workspace/backping");
   });
 
-  it("generates Codex config with static authorization header", () => {
-    const snippet = codexConfigSnippet(47832, "token-123");
+  it("generates MCP config with static authorization header", () => {
+    const snippet = mcpConfigSnippet(47832, "token-123");
     expect(snippet).toContain("[mcp_servers.backping.http_headers]");
     expect(snippet).toContain('Authorization = "Bearer token-123"');
   });

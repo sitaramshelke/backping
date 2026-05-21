@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld("backping", {
   setSlackConfig: (settings) => ipcRenderer.invoke("backping:set-slack-config", settings),
   testSlackConnection: () => ipcRenderer.invoke("backping:test-slack-connection"),
   clearSlackConfig: () => ipcRenderer.invoke("backping:clear-slack-config"),
-  copyCodexConfig: () => ipcRenderer.invoke("backping:copy-codex-config"),
+  copyMcpConfig: () => ipcRenderer.invoke("backping:copy-mcp-config"),
   copyAgentInstructions: () => ipcRenderer.invoke("backping:copy-agent-instructions"),
   copySlackManifest: () => ipcRenderer.invoke("backping:copy-slack-manifest"),
   openSlackApps: () => ipcRenderer.invoke("backping:open-slack-apps"),
